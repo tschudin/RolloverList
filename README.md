@@ -114,7 +114,7 @@ encode this as one log entry with two low-level operations:
 #4475  (value "first element"), (tail 4475)
 ```
 
-The two-element RoloLIST ``['first element','2nd element']```, for
+The two-element RoloLIST ```['first element','2nd element']```, for
 example resulting from an additional high-level ```append("2nd
 element")``` command, can be encoded as:
 
