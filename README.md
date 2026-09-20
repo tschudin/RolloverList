@@ -203,7 +203,8 @@ TinySSB has a limitation of 48 Bytes per log entry (if not using
 side-chains). We implemented a "group membership" RoloLIST where
 members are identified by an opaque 32 Bytes value and the
 order of addition is maintained (if using only ```append()```).
-The following compact encoding keeps within the 48B limit looks:
+The following compact encoding of a RoloLIST log entry fills
+exactly 48 Bytes:
 
 ```
 +---+--+-+--------------------------------+----+----+--+
