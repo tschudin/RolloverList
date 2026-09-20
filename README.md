@@ -185,6 +185,7 @@ class RoloSET:
 class RoloLIST:
   __len__()       return number of elements in the LIST
   __iter__()      return iterator over all LIST elements
+  get(ndx)        retieve value at given index
   append(val)     append at end of LIST
   insert(ndx,val) insert at given index
   set(ndx,val)    replace value at given index
