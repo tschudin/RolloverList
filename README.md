@@ -200,9 +200,10 @@ class RoloLIST:
 ## Example of a Compact Encoding for tinySSB
 
 TinySSB has a limitation of 48 Bytes per log entry (if not using
-side-chains).  We implemented a "group membership" RoloSET where
-members are identified by an opaque 32 Bytes value. The resulting
-compact encoding that keeps within the 48B limit looks as follows:
+side-chains). We implemented a "group membership" RoloLIST where
+members are identified by an opaque 32 Bytes value and the
+order of addition is maintained (if using only ```append()```).
+The following compact encoding keeps within the 48B limit looks:
 
 ```
 +---+--+-+--------------------------------+----+----+--+
@@ -210,7 +211,7 @@ compact encoding that keeps within the 48B limit looks as follows:
 +---+--+-+--------------------------------+----+----+--+
   3  2  1                32                 4    4   2   = 48 Bytes
 
-MAG    magic pattern (constant 'GMS' for "group membership set")
+MAG    magic pattern (constant 'GML' for "group membership list")
 SZ     size (number of relevant log entries, including this one)
 F      flags (4x2 bits: 00 unused, 01 value, 10 link, 11 tail)
 o0..3  operations' parameters
