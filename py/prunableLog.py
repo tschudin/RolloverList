@@ -27,6 +27,8 @@ class PrunableLog:
         return len(self.content)
 
     def __getitem__(self, seq):
+        if seq < 0:
+            seq += self.startSeq + len(self.content)
         return self.content[seq - self.startSeq]
 
     def getSeqRange(self): # returns lowest and highest sequence numbers

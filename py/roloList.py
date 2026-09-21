@@ -36,10 +36,12 @@ class RoloLIST:
         if len(log) == 0:
             return
 
+        assert log.content[-1][0] == len(self.log), print(f"{log.content[-1][0]} {len(self.log)}")
+
         # the log only stores 'prev' pointers: read them in a first pass
         self.dll = [[None,None,None] for i in range(len(log))]
         for seq,e in enumerate(log):
-            for op in e:
+            for op in e[1]:
                 # don't load values yet, we do it during the reverse scan
                 # if op[0] == 'v':
                 #     self.dll[seq][0] = e[0][1]
@@ -57,7 +59,7 @@ class RoloLIST:
         while seq != None:
             self.len += 1
             ndx = seq - self.log.startSeq
-            self.dll[ndx][0] = self.log[seq][0][1]
+            self.dll[ndx][0] = self.log[seq][1][0][1]
             self.dll[ndx][2] = next
             next = seq
             seq = self.dll[ndx][1]
@@ -66,7 +68,8 @@ class RoloLIST:
         # note: unlinked elements have the first dll component set to None, can be pruned
 
     def _emit(self, ops):
-        return self.log.append(ops)
+        depth = len(self.log.content) + 1 # number of valid/required log entries
+        return self.log.append( (depth,ops) )
 
     def _ndx2ndx(self, ndx): # convert roloLIST index to internal dll index by traversal
         if ndx < 0:
@@ -157,13 +160,13 @@ class RoloLIST:
         ndx = self._ndx2ndx(ndx)      # ndx is now relative to self.dll
         new_seq = self.log.getSeqRange()[1] + 1
         if self.len == 1:
-            self._emit( ( ('v',val),
-                          ('t',new_seq) ) )
             assert ndx == 0, print(f"ndx not zero, ndx={ndx}, dll={self.dll}")
             self.dll.append( [val, None, None] )
             self.head_seq = self.tail_seq = new_seq
             self.dll[ndx][0] = None
             self._prune()
+            self._emit( ( ('v',val),
+                          ('t',new_seq) ) )
             return
         # append new value to the log, splice the element into the linked list
         ops = [ ('v',val) ]
@@ -179,13 +182,12 @@ class RoloLIST:
         if self._seq2ndx(self.tail_seq) == ndx:
             ops.append( ('t', new_seq) )
             self.tail_seq = new_seq
-        self._emit(ops)
         self.dll[ndx][0] = None # mark for future GC/prune
-        ops = []
 
+        self._prune()
+        self._emit(ops)
         if ndx != 0:
             self._rollover()
-        self._prune()
 
     def __delitem__(self, ndx):  # so that we can do  del LIST[ndx]
         if ndx < 0:
@@ -272,13 +274,12 @@ class RoloLIST:
             if oldest_ndx == ndx: 
                 self.dll.append(None) # keep dll synchronized with log
 
+        self.dll[ndx][0] = None  # tagged for GC/prunable
+        self.len -= 1
+        self._prune()
         if len(ops) > 0:
             assert len(ops) <= 4, print(f"during del: ops={ops}, newseq={new_seq}")
             self._emit(ops)
-        self.dll[ndx][0] = None  # tagged for GC/prunable
-        self.len -= 1
-
-        self._prune()
 
     # --------------------------------------------------
 
